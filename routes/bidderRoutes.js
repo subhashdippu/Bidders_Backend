@@ -19,6 +19,5 @@ router.put("/:bidId/reject", protect, rejectBid);
 router.post("/:bidId/place", protect, placeBid);
 router.get("/:bidId/rank", protect, viewRank);
 router.put("/:bidId/update", protect, updateBid);
-// router.put("/:bidId/accept", protect, bidderController.acceptBid);
 
 module.exports = router;

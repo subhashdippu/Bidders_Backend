@@ -19,7 +19,7 @@ const createBid = async (req, res) => {
       const bidItem = new BidItem({
         description: item.description,
         baseAmount: item.baseAmount,
-        bid: newBid._id,
+        bids: newBid._id,
       });
       await bidItem.save();
       newBid.bidItems.push(bidItem._id);

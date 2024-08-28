@@ -92,9 +92,9 @@ const placeBid = async (req, res) => {
 // View current rank
 const viewRank = async (req, res) => {
   try {
-    // Implement logic to calculate and return the current rank
+    const bidders = await Bidder.find().sort({ bidAmount: 1 }).exec();
 
-    res.status(200).json({ rank: "current rank" });
+    res.status(200).json(bidders);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
