@@ -75,14 +75,21 @@ const placeBid = async (req, res) => {
   const { bidItemId, amount } = req.body;
 
   try {
+    const bid = await Bid.findById(req.params.bidId);
+
+    if (!bid) {
+      return res.status(404).json({ message: "Bid not found" });
+    }
+
+    // Create a new BidEntry
     const bidEntry = new BidEntry({
       bid: req.params.bidId,
       bidder: req.user._id,
       bidItem: bidItemId,
       amount,
     });
-
     await bidEntry.save();
+
     res.status(201).json(bidEntry);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -109,6 +116,7 @@ const viewRank = async (req, res) => {
       name: entry.bidder.name,
       bidAmount: entry.amount,
     }));
+
     res.status(200).json({
       bidders,
       highestBidAmount,

@@ -93,9 +93,27 @@ const monitorBids = async (req, res) => {
     const bid = await Bid.findById(req.params.id).populate("bidItems");
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    // Here, you would implement real-time updates using WebSockets
+    const bidEntries = await BidEntry.find({ bid: req.params.id })
+      .populate("bidder", "name")
+      .populate("bidItem", "description baseAmount");
 
-    res.status(200).json(bid);
+    const bidders = bidEntries.map((entry) => ({
+      _id: entry.bidder ? entry.bidder._id : null,
+      name: entry.bidder ? entry.bidder.name : "Unknown",
+      bidAmount: entry.amount,
+      bidItem: entry.bidItem ? entry.bidItem.description : "Unknown",
+      baseAmount: entry.bidItem ? entry.bidItem.baseAmount : 0,
+    }));
+
+    res.status(200).json({
+      bidders,
+      totalBidders: bidders.length,
+      bidItems: bid.bidItems.map((item) => ({
+        _id: item._id,
+        description: item.description || "Unknown",
+        baseAmount: item.baseAmount || 0,
+      })),
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -107,7 +125,7 @@ const viewBidSummary = async (req, res) => {
     const bid = await Bid.findById(req.params.id).populate({
       path: "bidItems",
       populate: {
-        path: "bids", // Ensure this path is correct
+        path: "bids",
         model: "BidEntry",
       },
     });
