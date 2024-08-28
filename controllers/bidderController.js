@@ -2,7 +2,7 @@ const Bidder = require("../models/Bidder");
 const BidEntry = require("../models/BidEntry");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
+const Bid = require("../models/Bid");
 // Register a new bidder
 const registerBidder = async (req, res) => {
   const { name, email, password } = req.body;
@@ -92,9 +92,27 @@ const placeBid = async (req, res) => {
 // View current rank
 const viewRank = async (req, res) => {
   try {
-    const bidders = await Bidder.find().sort({ bidAmount: 1 }).exec();
+    const bidEntries = await BidEntry.find({ bid: req.params.bidId })
+      .populate("bidder", "name")
+      .sort({ amount: 1 });
 
-    res.status(200).json(bidders);
+    if (bidEntries.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bids found for this auction." });
+    }
+
+    const highestBidAmount = bidEntries[bidEntries.length - 1].amount;
+
+    const bidders = bidEntries.map((entry) => ({
+      _id: entry.bidder._id,
+      name: entry.bidder.name,
+      bidAmount: entry.amount,
+    }));
+    res.status(200).json({
+      bidders,
+      highestBidAmount,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
