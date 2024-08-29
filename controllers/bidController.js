@@ -40,11 +40,11 @@ const inviteBidders = async (req, res) => {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    if (bid.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        message: "You are not authorized to invite bidders to this bid",
-      });
-    }
+    // if (bid.createdBy.toString() !== req.user._id.toString()) {
+    //   return res.status(403).json({
+    //     message: "You are not authorized to invite bidders to this bid",
+    //   });
+    // }
 
     for (let id of bidderIds) {
       const bidder = await Bidder.findById(id);
@@ -65,6 +65,12 @@ const publishBid = async (req, res) => {
   try {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
+
+    if (bid.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "You are not authorized to publish this bid",
+      });
+    }
 
     bid.status = "active";
     await bid.save();
