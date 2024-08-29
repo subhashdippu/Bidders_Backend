@@ -89,6 +89,12 @@ const setBidTimes = async (req, res) => {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
+    if (bid.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "You are not authorized to publish this bid",
+      });
+    }
+
     bid.startTime = startTime;
     bid.endTime = endTime;
     await bid.save();
