@@ -125,6 +125,10 @@ const viewBidSummary = async (req, res) => {
     const bid = await Bid.findById(req.params.id).populate("bidItems");
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
+    if (bid.status !== "closed") {
+      return res.status(403).json({ message: "Bid is not closed yet" });
+    }
+
     const bidEntries = await BidEntry.find({ bid: req.params.id })
       .populate("bidder", "name")
       .populate("bidItem", "description baseAmount");
