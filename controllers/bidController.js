@@ -13,8 +13,6 @@ const createBid = async (req, res) => {
       createdBy: req.user._id,
       bidItems: [],
     });
-
-    // Create bid items and add to the bid
     for (let item of bidItems) {
       const bidItem = new BidItem({
         description: item.description,
@@ -111,7 +109,7 @@ const monitorBids = async (req, res) => {
     const bid = await Bid.findById(req.params.id).populate("bidItems");
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    // Here, you would implement real-time updates using WebSockets
+    // Here, Implement real-time updates using WebSockets
 
     res.status(200).json(bid);
   } catch (error) {
@@ -122,12 +120,12 @@ const monitorBids = async (req, res) => {
 // View bid summary after bidding ends
 const viewBidSummary = async (req, res) => {
   try {
-    const bid = await Bid.findById(req.params.id).populate("bidItems");
+    const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    if (bid.status !== "closed") {
-      return res.status(403).json({ message: "Bid is not closed yet" });
-    }
+    // if (bid.status !== "closed") {
+    //   return res.status(403).json({ message: "Bid is not closed yet" });
+    // }
 
     const bidEntries = await BidEntry.find({ bid: req.params.id })
       .populate("bidder", "name")
