@@ -38,11 +38,12 @@ const inviteBidders = async (req, res) => {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    // if (bid.createdBy.toString() !== req.user._id.toString()) {
-    //   return res.status(403).json({
-    //     message: "You are not authorized to invite bidders to this bid",
-    //   });
-    // }
+    // Updated Only creator can invite bidders
+    if (bid.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "You are not authorized to invite bidders to this bid",
+      });
+    }
 
     for (let id of bidderIds) {
       const bidder = await Bidder.findById(id);
@@ -64,6 +65,7 @@ const publishBid = async (req, res) => {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
+    // Updated Only creator
     if (bid.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You are not authorized to publish this bid",
@@ -86,10 +88,10 @@ const setBidTimes = async (req, res) => {
   try {
     const bid = await Bid.findById(req.params.id);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
-
+    // Updated Only creator
     if (bid.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
-        message: "You are not authorized to publish this bid",
+        message: "You are not authorized to change the time",
       });
     }
 
@@ -131,7 +133,11 @@ const viewBidSummary = async (req, res) => {
       .populate("bidder", "name")
       .populate("bidItem", "description baseAmount");
 
-    const bidders = bidEntries.map((entry) => ({
+    // Edge case
+    // if (!bidEntries)
+    //   return res.status(404).json({ message: "bidEntries not found" });
+
+    const bidders = bidEntries?.map((entry) => ({
       _id: entry.bidder ? entry.bidder._id : null,
       name: entry.bidder ? entry.bidder.name : "Unknown",
       bidAmount: entry.amount,

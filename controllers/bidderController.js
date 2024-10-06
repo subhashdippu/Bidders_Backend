@@ -44,9 +44,27 @@ const loginBidder = async (req, res) => {
 // Accept a bid request
 const acceptBid = async (req, res) => {
   try {
-    const bidder = await Bidder.findById(req.user._id);
+    const bidder = await Bidder.findById(req.user._id).populate("invitedBids");
+
     if (!bidder) return res.status(404).json({ message: "Bidder not found" });
-    res.status(200).json({ message: "Bid accepted" });
+
+    const bid = await Bid.findById(req.params.bidId);
+    if (!bid) return res.status(404).json({ message: "Bid not found" });
+
+    const isBidInvited = bidder.invitedBids.find(
+      (invitedBid) => invitedBid._id.toString() === req.params.bidId
+    );
+
+    if (!isBidInvited) {
+      return res.status(403).json({
+        message: "You are not invited to this bid, hence cannot accept it.",
+      });
+    }
+
+    bid.status = "accepted";
+    await bid.save();
+
+    res.status(202).json({ message: "Bid accepted" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
